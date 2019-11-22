@@ -6,13 +6,6 @@ import java.util.Map;
 
 public class Company {
     public static Map<String, List<Employee>> mapOfEmployees = new HashMap<String, List<Employee>>();
-    static {
-        mapOfEmployees.put("программисты", new ArrayList<Employee>());
-        mapOfEmployees.put("маркетинг", new ArrayList<Employee>());
-        mapOfEmployees.put("менеджмент", new ArrayList<Employee>());
-        mapOfEmployees.put("кадры", new ArrayList<Employee>());
-        mapOfEmployees.put("бухгалтерия", new ArrayList<Employee>());
-    }
 
     public static BigDecimal getAvrSalary(String nameOfDepartment) {
         nameOfDepartment = nameOfDepartment.trim().toLowerCase();

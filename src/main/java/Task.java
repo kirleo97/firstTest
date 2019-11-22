@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -67,8 +68,7 @@ public class Task {
 
                 String department = mas[sizeOfMas - 1].toLowerCase();
                 if (!Company.mapOfEmployees.containsKey(department)) {
-                    System.out.println("Ошибка: введённый департамент для данного сотрудника не существует. Ошибка в строке " + numberOfString + " для сотрудника с именем " + fullNameOfEmployee + ". Перейдем к следующему сотруднику.");
-                    continue;
+                    Company.mapOfEmployees.put(department, new ArrayList<Employee>());
                 }
 
                 Employee employee = new Employee(fullNameOfEmployee, decimalSalary);
