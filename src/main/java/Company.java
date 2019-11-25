@@ -25,7 +25,7 @@ public class Company {
         Company.mapOfEmployees.get(department).add(employee);
     }
 
-    public BigDecimal getAvrSalary(String nameOfDepartment) {
+    public BigDecimal getAvrSalaryOfDepartment(String nameOfDepartment) {
         if (!mapOfEmployees.containsKey(nameOfDepartment)) {
             System.out.println("При вычислении средней заработной платы для отдела " + nameOfDepartment + " возникла ошибка. Данный отдел не был найден в списке.");
             return null;
