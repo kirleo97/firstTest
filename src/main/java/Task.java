@@ -4,37 +4,30 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 public class Task {
     public static void main(String[] args) {
-        Company company = new Company();
-        String fileName = args[0];
-        if (fileName == null || fileName.isEmpty()) {
+        try {
+            String fileName = args[0];
+            readEmployees(fileName);
+            writeEmployees();
+        } catch (ArrayIndexOutOfBoundsException e) {
             System.out.println("Ошибка: файл не был передан в качестве аргумента. Программа не может быть выполнена.");
-            return;
+            e.printStackTrace();
         }
-        readEmployees(fileName);
-        writeEmployees();
     }
 
     public static void readEmployees(String fileName) {
-        System.out.println("Начинаем считывание сотрудников из файла " + fileName + "...");
-        System.out.println();
+        System.out.println("Начинаем считывание сотрудников из файла " + fileName + "...\n");
 
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(fileName));
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
             String s;
             String[] mas;
             int numberOfString = 0;
-
             while (reader.ready()) {
                 numberOfString++;
                 s = reader.readLine();
-
-                if (s == null || s.isEmpty()) continue;
+                if (s.isEmpty()) continue;
 
                 mas = s.trim().split(" ");
                 int sizeOfMas = mas.length;
@@ -44,36 +37,25 @@ public class Task {
                 }
 
                 String fullNameOfEmployee = "";
-                boolean isNameRight = true;
-                for (int i = 0; i < sizeOfMas - 2 && isNameRight; i++) {
-                    isNameRight = mas[i].trim().matches("[а-яА-ЯёЁ]+");
+                for (int i = 0; i < sizeOfMas - 2; i++) {
                     fullNameOfEmployee += mas[i] + " ";
                 }
-                if (!isNameRight) {
+                if (!isNameRight(fullNameOfEmployee)) {
                     System.out.println("Ошибка: для имени сотрудника на строке " + numberOfString + " введены данные неверного формата. Перейдем к следующему сотруднику.");
                     continue;
                 }
-                fullNameOfEmployee = fullNameOfEmployee.trim();
 
                 String salary = mas[sizeOfMas - 2];
+                BigDecimal decimalSalary;
                 try {
-                    Double.parseDouble(salary);
+                    decimalSalary = new BigDecimal(salary).setScale(2, BigDecimal.ROUND_HALF_UP);
                 } catch (NumberFormatException e) {
                     System.out.println("Введены данные неверного формата для заработной платы работника. Ошибка в строке + " + numberOfString + " для сотрудника с именем " + fullNameOfEmployee + ". Перейдем к следующему сотруднику.");
                     e.printStackTrace();
                     continue;
                 }
-                BigDecimal decimalSalary = new BigDecimal(salary);
-                decimalSalary = decimalSalary.setScale(2, BigDecimal.ROUND_HALF_UP);
 
-                String department = mas[sizeOfMas - 1].toLowerCase();
-                if (!Company.mapOfEmployees.containsKey(department)) {
-                    Company.mapOfEmployees.put(department, new ArrayList<Employee>());
-                }
-
-                Employee employee = new Employee(fullNameOfEmployee, decimalSalary);
-                List<Employee> list = Company.mapOfEmployees.get(department);
-                list.add(employee);
+                Company.getInstance().addEmployeeToDepartment(mas[sizeOfMas - 1].toLowerCase(), new Employee(fullNameOfEmployee.trim(), decimalSalary));
             }
         } catch (FileNotFoundException e) {
             System.out.println("Возникла ошибка: введённый Вами файл с именем " + fileName + " не найден. Дальнейший процесс считывания сотрудников невозможен.");
@@ -87,21 +69,26 @@ public class Task {
     }
 
     public static void writeEmployees() {
-        System.out.println();
-        System.out.println("Начинаем выведение информации о сотрудниках...");
-        System.out.println();
-
-        for (Map.Entry<String, List<Employee>> pair : Company.mapOfEmployees.entrySet()) {
-            String nameOfDepartment = pair.getKey();
-            System.out.println("Вывод информации о следующем отделе: " + nameOfDepartment + "...");
-            for (Employee employee : pair.getValue()) {
+        System.out.println("\nНачинаем выведение информации о сотрудниках...\n");
+        for (String department : Company.mapOfEmployees.keySet()) {
+            System.out.println("Вывод информации о следующем отделе: " + department + "...");
+            for (Employee employee : Company.mapOfEmployees.get(department)) {
                 System.out.printf("%-50s", employee.getFullName());
                 System.out.println(employee.getSalary().toString());
             }
-            System.out.println("Средняя заработная плата по отделу составляет " + Company.getAvrSalary(pair.getKey()));
-            System.out.println();
+            System.out.println("Средняя заработная плата по отделу составляет " + Company.getInstance().getAvrSalary(department) + "\n");
         }
+    }
 
-        System.out.println();
+    public static boolean isNameRight(String name) {
+        String[] mas = name.trim().split(" ");
+        boolean isNameFormatRight;
+        for (int i = 0; i < mas.length; i++) {
+            isNameFormatRight = mas[i].trim().matches("[а-яА-ЯёЁ]+");
+            if (!isNameFormatRight) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -7,8 +7,7 @@ public class Employee {
 
     public Employee(String fullName, BigDecimal salary) {
         this.fullName = fullName;
-        salary = salary.setScale(2, BigDecimal.ROUND_HALF_UP);
-        this.salary = salary;
+        setSalary(salary);
     }
 
     public String getFullName() {
@@ -20,11 +19,10 @@ public class Employee {
     }
 
     public void setSalary(BigDecimal salary) {
-        salary = salary.setScale(2, BigDecimal.ROUND_HALF_UP);
-        if (salary.compareTo(new BigDecimal(0.00)) < 0) {
-            this.salary = new BigDecimal("0.00");
+        if (salary.compareTo(BigDecimal.ZERO) < 0) {
+            this.salary = BigDecimal.ZERO.setScale(2, BigDecimal.ROUND_HALF_UP);
             return;
         }
-        this.salary = salary;
+        this.salary = salary.setScale(2, BigDecimal.ROUND_HALF_UP);
     }
 }
