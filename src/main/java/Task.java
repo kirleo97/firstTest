@@ -34,35 +34,14 @@ public class Task {
             while (reader.ready()) {
                 numberOfString++;
                 s = reader.readLine();
-                if (s.isEmpty()) continue;
-
-                mas = s.trim().split(" ");
-                int sizeOfMas = mas.length;
-                if (sizeOfMas < 3) {
-                    System.out.println("Введены данные неверного формата для данного сотрудника на строке + " + numberOfString + ". Перейдем к следующему сотруднику.");
+                if (s.isEmpty()) {
                     continue;
                 }
-
-                String fullNameOfEmployee = "";
-                for (int i = 0; i < sizeOfMas - 2; i++) {
-                    fullNameOfEmployee += mas[i] + " ";
-                }
-                if (!isNameRight(fullNameOfEmployee)) {
-                    System.out.println("Ошибка: для имени сотрудника на строке " + numberOfString + " введены данные неверного формата. Перейдем к следующему сотруднику.");
+                mas = s.split(" ");
+                if (!isDataRight(mas, numberOfString)) {
                     continue;
                 }
-
-                String salary = mas[sizeOfMas - 2];
-                BigDecimal decimalSalary;
-                try {
-                    decimalSalary = new BigDecimal(salary).setScale(2, BigDecimal.ROUND_HALF_UP);
-                } catch (NumberFormatException e) {
-                    System.out.println("Введены данные неверного формата для заработной платы работника. Ошибка в строке + " + numberOfString + " для сотрудника с именем " + fullNameOfEmployee + ". Перейдем к следующему сотруднику.");
-                    e.printStackTrace();
-                    continue;
-                }
-
-                Company.getInstance().addEmployeeToDepartment(mas[sizeOfMas - 1].toLowerCase(), new Employee(fullNameOfEmployee.trim(), decimalSalary));
+                Company.getInstance().addEmployeeToDepartment(mas[mas.length - 1].toLowerCase(), new Employee(makeUpName(mas), new BigDecimal(mas[mas.length - 2])));
             }
         } catch (FileNotFoundException e) {
             System.out.println("Возникла ошибка: введённый Вами файл с именем " + fileName + " не найден. Дальнейший процесс считывания сотрудников невозможен.");
@@ -87,16 +66,38 @@ public class Task {
         }
     }
 
-    public static boolean isNameRight(String name) {
-        String[] mas = name.trim().split(" ");
-        boolean isNameFormatRight;
-        for (int i = 0; i < mas.length; i++) {
-            isNameFormatRight = mas[i].trim().matches("[а-яА-ЯёЁ]+");
-            if (!isNameFormatRight) {
+    public static boolean isDataRight(String[] data, int numberOfString) {
+        int sizeOfMas = data.length;
+        if (sizeOfMas < 3) {
+            System.out.println("Введены данные неверного формата для данного сотрудника на строке + " + numberOfString + ". Перейдем к следующему сотруднику.");
+            return false;
+        }
+
+        String fullNameOfEmployee = "";
+        for (int i = 0; i < sizeOfMas - 2; i++) {
+            if (!(data[i].matches("[а-яА-ЯёЁ]+"))) {
+                System.out.println("Ошибка: для имени сотрудника на строке " + numberOfString + " введены данные неверного формата. Перейдем к следующему сотруднику.");
                 return false;
             }
+            fullNameOfEmployee += data[i] + " ";
+        }
+
+        try {
+            new BigDecimal(data[sizeOfMas - 2]);
+        } catch (NumberFormatException e) {
+            System.out.println("Введены данные неверного формата для заработной платы работника. Ошибка в строке + " + numberOfString + " для сотрудника с именем " + fullNameOfEmployee + ". Перейдем к следующему сотруднику.");
+            e.printStackTrace();
+            return false;
         }
         return true;
+    }
+
+    public static String makeUpName(String[] mas) {
+        String fullNameOfEmployee = "";
+        for (int i = 0; i < mas.length - 2; i++) {
+            fullNameOfEmployee += mas[i] + " ";
+        }
+        return fullNameOfEmployee;
     }
 
     public static void printCombinations(Map<String, List<Employee>> map) {
@@ -115,8 +116,7 @@ public class Task {
                     while ((indexes = generateCombinations(indexes, m, listOfEmployeesOut.size())) != null) {
                         if (checkCombination(indexes, departmentFrom, departmentTo, previousAvrSalaryOfDepartmentFrom, previousAvrSalaryOfDepartmentTo)) {
                             numberOfCombination++;
-                            System.out.println("Комбинация номер " + numberOfCombination + ":");
-                            System.out.print("следующие сотрудники могут быть переведены из отдела " + departmentFrom + " в отдел " + departmentTo + ": ");
+                            System.out.println("Комбинация номер " + numberOfCombination + ":\n" + "следующие сотрудники могут быть переведены из отдела " + departmentFrom + " в отдел " + departmentTo + ": ");
                             for (int index : indexes) {
                                 System.out.print(listOfEmployeesOut.get(index - 1).getFullName() + ", ");
                             }

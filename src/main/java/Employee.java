@@ -20,9 +20,9 @@ public class Employee {
 
     public void setSalary(BigDecimal salary) {
         if (salary.compareTo(BigDecimal.ZERO) < 0) {
-            this.salary = BigDecimal.ZERO.setScale(2, BigDecimal.ROUND_HALF_UP);
-            return;
+            this.salary = BigDecimal.ZERO;
+        } else {
+            this.salary = salary.setScale(2, BigDecimal.ROUND_HALF_UP);
         }
-        this.salary = salary.setScale(2, BigDecimal.ROUND_HALF_UP);
     }
 }

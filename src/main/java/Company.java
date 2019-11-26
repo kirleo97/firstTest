@@ -34,15 +34,12 @@ public class Company {
             System.out.println("При вычислении средней заработной платы для отдела " + nameOfDepartment + " возникла ошибка. Данный отдел не был найден в списке.");
             return null;
         }
-
-        BigDecimal sumSalary = new BigDecimal("0.00");
-        List<Employee> list = mapOfEmployees.get(nameOfDepartment);
-        for (Employee employee : list) {
-            sumSalary = sumSalary.add(employee.getSalary());
+        if (mapOfEmployees.get(nameOfDepartment).size() == 0) {
+            return BigDecimal.ZERO;
         }
-        if (sumSalary.compareTo(BigDecimal.ZERO) == 0) {
-            return sumSalary;
-        }
-        return sumSalary.divide(new BigDecimal(list.size()), 2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal sumSalary = mapOfEmployees.get(nameOfDepartment).stream().
+                map(employ -> employ.getSalary()).
+                reduce(BigDecimal.ZERO.setScale(2, BigDecimal.ROUND_HALF_UP), (arr, element) -> arr.add(element));
+        return sumSalary.divide(new BigDecimal(mapOfEmployees.get(nameOfDepartment).size()), 2, BigDecimal.ROUND_HALF_UP);
     }
 }
