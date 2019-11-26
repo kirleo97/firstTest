@@ -1,10 +1,8 @@
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.SQLOutput;
 import java.util.List;
 import java.util.Map;
 
@@ -19,8 +17,8 @@ public class Task {
             e.printStackTrace();
             System.exit(0);
         }
-        if (!Company.mapOfEmployees.isEmpty()) {
-            printCombinations(Company.mapOfEmployees);
+        if (!Company.getInstance().getMapOfEmployees().isEmpty()) {
+            printCombinations(Company.getInstance().getMapOfEmployees());
         } else {
             System.out.println("Ошибка: карта департаментов и списков сотрудников пуста, вычисление не может быть произведено.");
         }
@@ -79,9 +77,9 @@ public class Task {
 
     public static void writeEmployees() {
         System.out.println("\nНачинаем выведение информации о сотрудниках...\n");
-        for (String department : Company.mapOfEmployees.keySet()) {
+        for (String department : Company.getInstance().getMapOfEmployees().keySet()) {
             System.out.println("Вывод информации о следующем отделе: " + department + "...");
-            for (Employee employee : Company.mapOfEmployees.get(department)) {
+            for (Employee employee : Company.getInstance().getMapOfEmployees().get(department)) {
                 System.out.printf("%-50s", employee.getFullName());
                 System.out.println(employee.getSalary().toString());
             }
@@ -103,21 +101,18 @@ public class Task {
 
     public static void printCombinations(Map<String, List<Employee>> map) {
         System.out.println("Выведем все возможные комбинации переводов сотрудников из одного отдела в другой...");
-        Company company = Company.getInstance();
         int numberOfCombination = 0;
         for (String departmentFrom : map.keySet()) {
             List<Employee> listOfEmployeesOut = map.get(departmentFrom);
-            BigDecimal previousAvrSalaryOfDepartmentFrom = company.getAvrSalaryOfDepartment(departmentFrom);
+            BigDecimal previousAvrSalaryOfDepartmentFrom = Company.getInstance().getAvrSalaryOfDepartment(departmentFrom);
             for (String departmentTo : map.keySet()) {
                 if (departmentFrom.equals(departmentTo)) {
                     continue;
                 }
-                BigDecimal previousAvrSalaryOfDepartmentTo = company.getAvrSalaryOfDepartment(departmentFrom);
+                BigDecimal previousAvrSalaryOfDepartmentTo = Company.getInstance().getAvrSalaryOfDepartment(departmentTo);
                 for (int m = 1; m <= listOfEmployeesOut.size(); m++) {
                     int[] indexes = null;
-                    int COUNT = 0;
                     while ((indexes = generateCombinations(indexes, m, listOfEmployeesOut.size())) != null) {
-                        System.out.println(COUNT++);
                         if (checkCombination(indexes, departmentFrom, departmentTo, previousAvrSalaryOfDepartmentFrom, previousAvrSalaryOfDepartmentTo)) {
                             numberOfCombination++;
                             System.out.println("Комбинация номер " + numberOfCombination + ":");
@@ -134,39 +129,44 @@ public class Task {
     }
 
     public static int[] generateCombinations(int[] arr, int m, int n) {
-        if (arr == null)
-        {
+        if (arr == null) {
             arr = new int[m];
-            for (int i = 0; i < m; i++)
+            for (int i = 0; i < m; i++) {
                 arr[i] = i + 1;
+            }
             return arr;
         }
-        for (int i = m - 1; i >= 0; i--)
-            if (arr[i] < n - m + i + 1)
-            {
-                arr[i]++;
-                for (int j = i; j < m - 1; j++)
+        for (int i = m - 1; i >= 0; i--) {
+            if (arr[i] < n - m + i + 1) {
+                arr[i] = arr[i] + 1;
+                for (int j = i; j < m - 1; j++) {
                     arr[j + 1] = arr[j] + 1;
+                }
                 return arr;
             }
+        }
         return null;
     }
 
     public static boolean checkCombination(int[] indexes, String depFrom, String depTo, BigDecimal previousAvrSalaryOfDepartmentFrom, BigDecimal previousAvrSalaryOfDepartmentTo) {
-        List<Employee> employeesOut = Company.mapOfEmployees.get(depFrom);
-        List<Employee> employeesInto = Company.mapOfEmployees.get(depTo);
+        List<Employee> employeesOut = Company.getInstance().getMapOfEmployees().get(depFrom);
+        List<Employee> employeesInto = Company.getInstance().getMapOfEmployees().get(depTo);
 
         BigDecimal sumSalaryOfNewDepartmentTo = previousAvrSalaryOfDepartmentTo.multiply(new BigDecimal(employeesInto.size()));
         BigDecimal sumSalaryOfNewDepartmentFrom = previousAvrSalaryOfDepartmentFrom.multiply(new BigDecimal(employeesOut.size()));
-        int COUNT = 0;
+
         for (int index : indexes) {
-            System.out.println(++COUNT);
-            BigDecimal salaryOfEmployee = employeesOut.get(indexes[index] - 1).getSalary();
+            BigDecimal salaryOfEmployee = employeesOut.get(index - 1).getSalary();
             sumSalaryOfNewDepartmentTo = sumSalaryOfNewDepartmentTo.add(salaryOfEmployee);
             sumSalaryOfNewDepartmentFrom = sumSalaryOfNewDepartmentFrom.subtract(salaryOfEmployee);
         }
-        BigDecimal newAvrSalaryOfDepartmentTo = sumSalaryOfNewDepartmentTo.divide(new BigDecimal(employeesInto.size() + indexes.length));
-        BigDecimal newAvrSalaryOfDepartmentFrom = sumSalaryOfNewDepartmentFrom.divide(new BigDecimal(employeesOut.size() - indexes.length));
+        BigDecimal newAvrSalaryOfDepartmentTo = sumSalaryOfNewDepartmentTo.divide(new BigDecimal(employeesInto.size() + indexes.length), 2, BigDecimal.ROUND_HALF_UP);
+        BigDecimal newAvrSalaryOfDepartmentFrom;
+        if (employeesOut.size() - indexes.length != 0) {
+            newAvrSalaryOfDepartmentFrom = sumSalaryOfNewDepartmentFrom.divide(new BigDecimal(employeesOut.size() - indexes.length), 2, BigDecimal.ROUND_HALF_UP);
+        } else {
+            newAvrSalaryOfDepartmentFrom = BigDecimal.ZERO;
+        }
 
         if (newAvrSalaryOfDepartmentFrom.compareTo(previousAvrSalaryOfDepartmentFrom) > 0 && newAvrSalaryOfDepartmentTo.compareTo(previousAvrSalaryOfDepartmentTo) > 0) {
             return true;

@@ -6,9 +6,13 @@ import java.util.Map;
 
 public class Company {
     private static Company company;
-    public static Map<String, List<Employee>> mapOfEmployees = new HashMap<String, List<Employee>>();
+    private Map<String, List<Employee>> mapOfEmployees = new HashMap<String, List<Employee>>();
 
     private Company() {
+    }
+
+    public Map<String, List<Employee>> getMapOfEmployees() {
+        return mapOfEmployees;
     }
 
     public static Company getInstance() {
@@ -19,10 +23,10 @@ public class Company {
     }
 
     public void addEmployeeToDepartment(String department, Employee employee) {
-        if (!Company.mapOfEmployees.containsKey(department)) {
-            Company.mapOfEmployees.put(department, new ArrayList<Employee>());
+        if (!mapOfEmployees.containsKey(department)) {
+            mapOfEmployees.put(department, new ArrayList<Employee>());
         }
-        Company.mapOfEmployees.get(department).add(employee);
+        mapOfEmployees.get(department).add(employee);
     }
 
     public BigDecimal getAvrSalaryOfDepartment(String nameOfDepartment) {
