@@ -39,7 +39,7 @@ public class Company {
         }
         BigDecimal sumSalary = mapOfEmployees.get(nameOfDepartment).stream().
                 map(employ -> employ.getSalary()).
-                reduce(BigDecimal.ZERO.setScale(2, BigDecimal.ROUND_HALF_UP), (arr, element) -> arr.add(element));
+                reduce(BigDecimal.ZERO.setScale(2, BigDecimal.ROUND_HALF_UP), BigDecimal::add);
         return sumSalary.divide(new BigDecimal(mapOfEmployees.get(nameOfDepartment).size()), 2, BigDecimal.ROUND_HALF_UP);
     }
 }
